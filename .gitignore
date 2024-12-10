@@ -52,6 +52,7 @@ jspm_packages
 # Ignore bundler config.
 /.bundle
 
+.env
 # Virtual env metadata
 .venv
 
@@ -64,3 +65,7 @@ __pycache__
 instance
 .vscode
 package-lock.json
+
+client/node_modules
+server/migrations
+server/instance

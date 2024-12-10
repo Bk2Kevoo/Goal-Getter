@@ -1,21 +1,13 @@
-#!/usr/bin/env python3
-
-# Standard library imports
-
-# Remote library imports
-from flask import request
-from flask_restful import Resource
-
-# Local imports
-from config import app, db, api
+from werkzeug.exceptions import NotFound
+from flask import render_template
+from config import app, api
 # Add your model imports
 
 
 # Views go here!
-
-@app.route('/')
-def index():
-    return '<h1>Project Server</h1>'
+@app.errorhandler(NotFound)
+def not_found(error):
+    return{"error": error.description}, 404
 
 
 if __name__ == '__main__':
