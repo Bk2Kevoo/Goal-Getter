@@ -26,7 +26,7 @@ class Goal(db.Model, SerializerMixin):
     user = db.relationship("User", back_populates="goals") 
 
     # Serialize
-    serialize_rules = ("-user.goals",)
+    serialize_rules = ("-user",)
 
     
     @validates("goal_amount")

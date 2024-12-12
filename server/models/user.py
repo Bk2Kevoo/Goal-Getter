@@ -1,29 +1,30 @@
 from models.__init__ import SerializerMixin, validates, re, db
 from config import flask_bcrypt
 from sqlalchemy.ext.hybrid import hybrid_property
+# from models.budget import Budget
 
 
 class User(db.Model, SerializerMixin):
     __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String, nullable=False)
+    name = db.Column(db.String(20), nullable=False)
     email = db.Column(db.String, unique=True, nullable=False)
     _password_hash = db.Column("password_hash", db.String(60), nullable=False)  
     created_at = db.Column(db.Date,  server_default=db.func.now())
     updated_at = db.Column(db.Date, onupdate=db.func.now())
 
     # Relationships
-    budgets = db.relationship('Budget', back_populates='user')
+    budgeting = db.relationship("Budget", back_populates="user")
     goals = db.relationship("Goal", back_populates="user", cascade="all, delete-orphan") 
 
     # Serialize
-    serialize_rules = ("-_password_hash", "-budgets",)
+    serialize_rules = ("-_password_hash", "-budgets", "-goals",)
 
     def __repr__(self):
         return f"""
             <Goal #{self.id}:
-                Username: {self.username}
+                Name: {self.name}
                 Email: {self.email}>
         """
 

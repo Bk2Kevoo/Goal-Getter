@@ -15,6 +15,5 @@ class GoalsGet(Resource):
                 return make_response({"message": "No goals found."}, 404)
 
             return make_response([goal.to_dict() for goal in goals], 200)
-        
         except Exception as e:
             return make_response({"error": str(e)}, 500)

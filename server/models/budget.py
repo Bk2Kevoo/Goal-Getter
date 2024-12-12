@@ -1,7 +1,6 @@
 from models.__init__ import SerializerMixin, validates, db
 from datetime import date
-from models.user import User
-# from models.category import Category
+# from models.user import User
 
 class Budget(db.Model, SerializerMixin):
     __tablename__ = "budgets"
@@ -33,7 +32,7 @@ class Budget(db.Model, SerializerMixin):
 
 
     # Relationships
-    user = db.relationship("User", back_populates="budgets")
+    user = db.relationship("User", back_populates="budgeting")
     category = db.relationship("Category", back_populates="budgets")
     expenses = db.relationship('Expense', back_populates='budget')
 
@@ -92,12 +91,12 @@ class Budget(db.Model, SerializerMixin):
             raise TypeError("Is Active must be a boolean value.")
         return is_active
     
-    @validates("user_id")
-    def validate_user_id(self, _, user_id):
-        if not isinstance(user_id, int):
-            raise TypeError("User ids must be integers")
-        elif user_id < 1:
-            raise ValueError(f"{user_id} has to be a positive integer")
-        elif not db.session.query(User).get(user_id):
-            raise ValueError(f"{user_id} must belong to an existing User")
-        return user_id
+    # @validates("user_id")
+    # def validate_user_id(self, _, user_id):
+    #     if not isinstance(user_id, int):
+    #         raise TypeError("User ids must be integers")
+    #     elif user_id < 1:
+    #         raise ValueError(f"{user_id} has to be a positive integer")
+    #     elif not db.session.query(User).get(user_id):
+    #         raise ValueError(f"{user_id} must belong to an existing User")
+    #     return user_id
