@@ -1,6 +1,6 @@
-from flask import request, g, render_template, session
+# from flask import request, g, render_template, session
 from werkzeug.exceptions import NotFound
-from config import app, api, db
+from config import app, api
 
 # From my Auth folder
 from routes.auth.login import Login
@@ -28,7 +28,6 @@ api.add_resource(Login, "/login")
 api.add_resource(CurrentUser, "/current-user")
 api.add_resource(Logout, "/logout")
 api.add_resource(Refresh, "/refresh")
-
 api.add_resource(GoalsGet, "/user/goals")  # This is for getting all goals
 api.add_resource(GoalsById, "/user/goals/<int:goal_id>")  # This is for getting, updating, or deleting a specific goal by ID
 api.add_resource(GoalsPatch, "/user/goals/<int:goal_id>/update")  # This is for updating a goal

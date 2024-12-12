@@ -1,7 +1,6 @@
 from routes.__init__ import (
     Resource,
     make_response,
-    session,
     unset_access_cookies,
     unset_refresh_cookies,
     jwt_required,

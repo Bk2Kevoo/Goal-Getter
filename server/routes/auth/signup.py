@@ -3,15 +3,23 @@ from routes.__init__ import (
     request,
     db,
     make_response,
+    jwt_required,
+    get_jwt_identity,
     create_access_token,
     create_refresh_token,
     set_access_cookies,
     set_refresh_cookies,
+    unset_access_cookies,
+    unset_refresh_cookies,
+    unset_jwt_cookies,
+    current_user,
+    get_jwt
 )
 from models.user import User
 from sqlalchemy.exc import IntegrityError
 
 class Signup(Resource):
+    # @jwt_required
     def post(self):
         try:
             data = request.json
