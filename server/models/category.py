@@ -16,7 +16,7 @@ class Category(db.Model, SerializerMixin):
             <Category #{self.id}:
                 Name: {self.name}
                 Description: {self.description}
-                Allocated Amount: {self.allocated_amount}
+                Allocated Amount: {self.allocated_amount}>
         """
     # Relationship
     budgets = db.relationship("Budget", back_populates="category", cascade="all, delete-orphan")

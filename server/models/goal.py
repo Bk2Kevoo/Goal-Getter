@@ -19,14 +19,14 @@ class Goal(db.Model, SerializerMixin):
                 Current Savings: {self.current_savings}
                 Is Completed: {self.is_completed}
                 Date: {self.date}
-                User Id: {self.user_id}
+                User Id: {self.user_id}>
         """
 
     # Relationships
     user = db.relationship("User", back_populates="goals") 
 
     # Serialize
-    serialize_rules = ("-user",)
+    serialize_rules = ("-user.goals",)
 
     
     @validates("goal_amount")
@@ -52,7 +52,7 @@ class Goal(db.Model, SerializerMixin):
     @validates("user_id")
     def validate_user_id(self, _, user_id):
         if not isinstance(user_id, int):
-            raise TypeError("Category ids must be integers")
+            raise TypeError("User ids must be integers")
         elif user_id < 1:
             raise ValueError(
                 f"{user_id} has to be a positive integer"

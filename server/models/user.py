@@ -7,9 +7,9 @@ class User(db.Model, SerializerMixin):
     __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String, unique=True, nullable=False)
+    name = db.Column(db.String, nullable=False)
     email = db.Column(db.String, unique=True, nullable=False)
-    _password_hash = db.Column(db.String, nullable=False)  
+    _password_hash = db.Column("password_hash", db.String(60), nullable=False)  
     created_at = db.Column(db.Date,  server_default=db.func.now())
     updated_at = db.Column(db.Date, onupdate=db.func.now())
 
@@ -24,14 +24,14 @@ class User(db.Model, SerializerMixin):
         return f"""
             <Goal #{self.id}:
                 Username: {self.username}
-                Email: {self.email} 
+                Email: {self.email}>
         """
 
-    @validates("username")
-    def validate_username(self, _, username):
-        if not re.match(r"^[a-zA-Z0-9_]+$", username):
-            raise ValueError("Username must be alphanumeric with underscores only")
-        return username
+    @validates("name")
+    def validate_name(self, _, value):
+        if len(value) < 3:
+            raise ValueError("name must be 3 characters long")
+        return value
     
     @validates("email")
     def validate_email(self, _, email):
@@ -59,5 +59,5 @@ class User(db.Model, SerializerMixin):
         ).decode("utf-8")
         self._password_hash = hashed_password
 
-    def authenticate(self, password_to_check):
+    def auth(self, password_to_check):
         return flask_bcrypt.check_password_hash(self._password_hash, password_to_check)
