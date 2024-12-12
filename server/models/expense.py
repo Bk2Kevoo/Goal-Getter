@@ -1,6 +1,6 @@
 from models.__init__ import SerializerMixin, validates, db
 from models.budget import Budget 
-from datetime import datetime
+# from datetime import datetime
 
 class Expense(db.Model, SerializerMixin):
     __tablename__ = "expenses"
@@ -20,7 +20,7 @@ class Expense(db.Model, SerializerMixin):
                 Description: {self.description}
                 Amount: {self.amount}
                 Date: {self.date}
-                Budget Id: {self.budget_id}
+                Budget Id: {self.budget_id}>
         """
     
     # Relationships
@@ -31,10 +31,8 @@ class Expense(db.Model, SerializerMixin):
 
     @validates("description")
     def validate_description(self, key, description):
-        if not isinstance(description, str):
-            raise TypeError("Description must be a string")
-        elif description < 3:
-            raise ValueError("Description must be greater than 3")
+        if len(description) < 3:  # Check if the description length is less than 3
+            raise ValueError("Description must be at least 3 characters long.")
         return description
     
     @validates("amount")

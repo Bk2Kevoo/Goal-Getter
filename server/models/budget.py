@@ -1,7 +1,7 @@
 from models.__init__ import SerializerMixin, validates, db
 from datetime import date
 from models.user import User
-from models.category import Category
+# from models.category import Category
 
 class Budget(db.Model, SerializerMixin):
     __tablename__ = "budgets"
@@ -28,7 +28,7 @@ class Budget(db.Model, SerializerMixin):
                 End Date: {self.end_date}
                 Is Active: {self.is_active}
                 User Id: {self.user_id}
-                Category Id: {self.category_id}
+                Category Id: {self.category_id}>
         """
 
 
@@ -62,27 +62,29 @@ class Budget(db.Model, SerializerMixin):
     def validate_total_amount(self, _, total_amount):
         if not isinstance(total_amount, float):
             raise TypeError("Total Amount must be a float.")
-        elif not (0 <= total_amount <= 200_000):
+        elif not (0 < total_amount <= 200_000):
             raise ValueError(f"{total_amount} must be a positive float and no more than 200,000.")
         return total_amount
 
+
     @validates("start_date")
     def validate_start_date(self, _, start_date):
+        # Start date must be a valid date and should be today or in the future
         if not isinstance(start_date, date):
             raise TypeError("Start Date must be a valid date.")
         if start_date < date.today():
-            raise ValueError("Start Date cannot be in the past.")
+            raise ValueError("Start Date must be today or in the future.")
         return start_date
 
     @validates("end_date")
     def validate_end_date(self, _, end_date):
+        # End date must be a valid date and should be later than the start date
         if not isinstance(end_date, date):
             raise TypeError("End Date must be a valid date.")
-        if not self.start_date:
-            raise ValueError("Start Date must be set before validating End Date.")
-        if end_date < self.start_date:
-            raise ValueError("End Date cannot be earlier than Start Date.")
+        if end_date <= self.start_date:
+            raise ValueError("End Date must be after Start Date.")
         return end_date
+
 
     @validates("is_active")
     def validate_is_active(self, _, is_active):
