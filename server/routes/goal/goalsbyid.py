@@ -4,7 +4,7 @@ from models.goal import Goal
 from flask_jwt_extended import current_user
 
 
-# If it is the user that is logged in then allow him to see his goals noone elses
+# If it is the user that is logged in then allow them to see their goals no-one elses
 class GoalsById(Resource):    
     @jwt_required()
     def post(self):
