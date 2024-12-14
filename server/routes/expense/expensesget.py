@@ -19,3 +19,14 @@ class ExpensesGet(Resource):
 
         except Exception as e:
             return make_response({"error": str(e)}, 500)
+        
+class ExpensesById(Resource):
+    @jwt_required
+    def get(self, expense_id):
+        try:
+            expense = Expense.query.filter_by(id=expense_id, user_id=current_user.id).first()
+            if not expense:
+                return make_response({"message": "Expense not found or you do not have access to this."})
+            return make_response(expense.dict(), 200)
+        except Exception as e:
+            return make_response({"error": str(e)}, 500)

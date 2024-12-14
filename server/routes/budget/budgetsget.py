@@ -7,22 +7,18 @@ class BudgetsGet(Resource):
     @jwt_required()
     def get(self):
         try:
-            # Get data from the request body
-            data = request.get_json()
+            # Query all budgets belonging to the logged-in user
+            budgets = Budget.query.filter_by(user_id=current_user.id).all()
 
-            # Ensure that budget_id is provided in the request
-            if "budget_id" not in data:
-                return make_response({"error": "budget_id is required."}, 400)
+            # If no budgets are found, return a 404 response
+            if not budgets:
+                return make_response({"message": "No budgets found for the current user."}, 404)
 
-            # Fetch the budget by its ID, only if it belongs to the logged-in user
-            budget = Budget.query(id=data["budget_id"], user_id=current_user.id)
+            # Convert each budget to a dictionary (assuming a `to_dict` method exists)
+            budgets_data = [budget.to_dict() for budget in budgets]
 
-            # If no budget is found or it doesn't belong to the logged-in user, return a 404 response
-            if not budget:
-                return make_response({"message": "Budget not found or you do not have permission to access it."}, 404)
-
-            # Return the budget as a dictionary (assuming you have a to_dict method)
-            return make_response(budget.to_dict(), 200)
+            # Return the list of budgets
+            return make_response({"budgets": budgets_data}, 200)
 
         except Exception as e:
             return make_response({"error": str(e)}, 500)

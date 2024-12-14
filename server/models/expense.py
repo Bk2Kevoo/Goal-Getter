@@ -49,12 +49,12 @@ class Expense(db.Model, SerializerMixin):
             raise ValueError("A valid date must be provided.")
         return value
     
-    @validates("budget_id")
-    def validate_budget_id(self, _, budget_id):
-        if not isinstance(budget_id, int):
-            raise TypeError("Budget ids must be integers")
-        elif budget_id < 1:
-            raise ValueError(f"{budget_id} must be a positive integer")
-        elif not db.session.query(Budget).get(budget_id):
-            raise ValueError(f"{budget_id} must belong to an existing Budget")
-        return budget_id
+    # @validates("budget_id")
+    # def validate_budget_id(self, _, budget_id):
+    #     if not isinstance(budget_id, int):
+    #         raise TypeError("Budget ids must be integers")
+    #     elif budget_id < 1:
+    #         raise ValueError(f"{budget_id} must be a positive integer")
+    #     elif not db.session.query(Budget).get(budget_id):
+    #         raise ValueError(f"{budget_id} must belong to an existing Budget")
+    #     return budget_id
