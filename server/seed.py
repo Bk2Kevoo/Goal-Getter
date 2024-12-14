@@ -94,19 +94,12 @@ def seed_users(num_users=10):  # You can specify the number of users to generate
     for _ in range(num_users):
         # Generate a random name and email
         user = User(name=fake.name(), email=fake.email())
-        
-        # Hash the password before storing
-        hashed_password = generate_password_hash("Password11!!")
-        
-        # Set the password hash and created_at timestamp
-        user._password_hash = hashed_password  # Use password_hash instead of password
-        user.created_at = datetime.now()
+        user.password = ("Password11!!") 
+        # user.created_at = datetime.now()
         
         # Add the user to the session and list
         db.session.add(user)
         users.append(user)
-    
-    # Commit the transaction
     db.session.commit()
     return users
 

@@ -11,8 +11,8 @@ class User(db.Model, SerializerMixin):
     name = db.Column(db.String(20), nullable=False)
     email = db.Column(db.String, unique=True, nullable=False)
     _password_hash = db.Column("password_hash", db.String(60), nullable=False)  
-    created_at = db.Column(db.Date,  server_default=db.func.now())
-    updated_at = db.Column(db.Date, onupdate=db.func.now())
+    created_at = db.Column(db.DateTime,  server_default=db.func.now())
+    updated_at = db.Column(db.DateTime, onupdate=db.func.now())
 
     # Relationships
     budgeting = db.relationship("Budget", back_populates="user")

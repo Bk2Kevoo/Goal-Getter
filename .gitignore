@@ -67,3 +67,4 @@ package-lock.json
 server/instance
 .env
 .Pipfile.lock
+client/node_modules

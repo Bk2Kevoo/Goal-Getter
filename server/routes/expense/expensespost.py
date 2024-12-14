@@ -4,14 +4,29 @@ from models.expense import Expense
 from flask_jwt_extended import current_user
 
 class ExpensesPost(Resource):
-    @jwt_required
+    @jwt_required()
     def post(self):
         try:
-            expenses = Expense.query(Expense.user_id == current_user.id)
+            # Get data from the request body
+            data = request.get_json()
 
-            if not expenses:
-                return make_response({"error": str(e)}, 404)
-            return make_response(expenses.to_dict(), 200)
-            
+            # Ensure that required fields are in the data
+            if "amount" not in data or "description" not in data:
+                return make_response({"error": "Amount and description are required."}, 400)
+
+            # Create a new expense instance
+            new_expense = Expense(
+                amount=data["amount"],
+                description=data["description"],
+                user_id=current_user.id  # Associate with the logged-in user
+            )
+
+            # Add the new expense to the database and commit the transaction
+            db.session.add(new_expense)
+            db.session.commit()
+
+            # Return the created expense as a response
+            return make_response(new_expense.to_dict(), 201)
+
         except Exception as e:
-            return make_response
+            return make_response({"error": str(e)}, 500)

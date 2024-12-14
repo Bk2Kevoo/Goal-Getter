@@ -20,21 +20,19 @@ from models.user import User
 from sqlalchemy.exc import IntegrityError
 
 class Login(Resource):
-    @jwt_required
+    # @jwt_required
     def post(self):
         try:
             data = request.json
-            user = User(email=data.get("email"), name=data.get("name"))
-            user.password = data.get("password")
-            db.session.add(user)
-            db.session.commit()
-            # import ipdb; ipdb.set_trace()
-            access_token = create_access_token(identity=user.id)
-            refresh_token = create_refresh_token(identity=user.id)
-            response = make_response(user.to_dict(), 201)
-            set_access_cookies(response, access_token)
-            set_refresh_cookies(response, refresh_token)
-            return response
+            user = User.query.filter_by(email=data.get("email", "")).first()
+            if user and user.auth(data.get("password", "")):
+                access_token = create_access_token(identity=user.id)
+                refresh_token = create_refresh_token(identity=user.id)
+                response = make_response(user.to_dict(), 200)
+                set_access_cookies(response, access_token)
+                set_refresh_cookies(response, refresh_token)
+                return response
+            return make_response({"error": "Invalid Crendentials"}, 401)
         except IntegrityError as e:
             return make_response({"error": str(e.orig)}, 422)
         except Exception as e:

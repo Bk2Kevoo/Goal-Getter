@@ -33,8 +33,10 @@ class Budget(db.Model, SerializerMixin):
 
     # Relationships
     user = db.relationship("User", back_populates="budgeting")
+
     category = db.relationship("Category", back_populates="budgets")
-    expenses = db.relationship('Expense', back_populates='budget')
+
+    expenses = db.relationship("Expense", back_populates="budget")
 
     #Serialize
     serialize_rules = ("-user", "-category", "-expenses",)

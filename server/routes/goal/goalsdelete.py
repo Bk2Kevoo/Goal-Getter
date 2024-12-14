@@ -4,8 +4,6 @@ from models.goal import Goal
 from flask_jwt_extended import current_user
 
 
-
-
 # User can Delete the goal they created from our system but only that specific user if they are logged in 
 class GoalsDelete(Resource):
     @jwt_required()
@@ -25,6 +23,7 @@ class GoalsDelete(Resource):
             db.session.delete(goal)
             db.session.commit()
 
+             # Return a success message with the goal ID
             return make_response({"message": "Goal deleted successfully."}, 200)
 
         except Exception as e:
