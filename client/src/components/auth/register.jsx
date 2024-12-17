@@ -1,10 +1,9 @@
 import styled from "styled-components";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useOutletContext, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { Formik } from "formik";
 import { object, string } from "yup";
-
 
 const signupSchema = object({
   name: string().min(3, "name must be 3 characters or more").required("name is required"),
@@ -17,12 +16,44 @@ const signinSchema = object({
   password: string().min(7).max(20).required("password is required"),
 });
 
-
 const Registration = () => {
   const [isLogin, setIsLogin] = useState(true);
-  const [googleUser, setGoogleUser] = useState(null);
-  const { curerntUser, updateUser } = useOutletContext();
+  const { currentUser, updateUser } = useOutletContext();  
   const navigate = useNavigate();
+
+  const handleGoogleResponse = useCallback(async (response) => {
+    const decoded = JSON.parse(atob(response.credential.split(".")[1]));
+    const googleUserData = {
+      email: decoded.email,
+      name: decoded.name,
+    };
+
+    try {
+      const res = await fetch("/api/v1/google-auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(googleUserData),
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        toast.success(`Welcome, ${data.user.name}!`);
+        updateUser(data.user);
+        navigate("/dashboard");
+      } else {
+        toast.error(data.error || "Google authentication failed!");
+      }
+    } catch (error) {
+      toast.error("Something went wrong with Google Authentication!");
+      console.error(error);
+    }
+  }, [navigate, updateUser]); 
+
+  useEffect(() => {
+    if (currentUser) { 
+      navigate("/");  
+    }
+  }, [currentUser, navigate]); 
 
   useEffect(() => {
     if (!window.google) {
@@ -41,41 +72,7 @@ const Registration = () => {
       };
       document.body.appendChild(script);
     }
-  }, []);
-
-  const handleGoogleResponse = async (response) => {
-    const decoded = JSON.parse(atob(response.credential.split(".")[1]));
-    const googleUserData = {
-      email: decoded.email,
-      name: decoded.name,
-    };
-  
-    try {
-      const res = await fetch("/api/v1/google-auth", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(googleUserData),
-      });
-      const data = await res.json();
-  
-      if (res.ok) {
-        toast.success(`Welcome, ${data.user.name}!`);
-        updateUser(data.user); // Update user context
-        navigate("/dashboard"); // Redirect to dashboard
-      } else {
-        toast.error(data.error || "Google authentication failed!");
-      }
-    } catch (error) {
-      toast.error("Something went wrong with Google Authentication!");
-      console.error(error);
-    }
-  };
-
-  useEffect(() => {
-    if (curerntUser) {
-      navigate("/");
-    }
-  }, [curerntUser, navigate]);
+  }, [handleGoogleResponse]); 
 
   return (
     <Container>
@@ -86,7 +83,7 @@ const Registration = () => {
         </ToggleButton>
       </Header>
       <Formik
-        initialValues={{email: "", password: "" }}
+        initialValues={{ email: "", password: "" }}
         onSubmit={async (values) => {
           const url = isLogin ? "/api/v1/login" : "/api/v1/signup";
           const response = await fetch(url, {
