@@ -7,8 +7,10 @@ from routes.auth.login import Login
 from routes.auth.signup import Signup
 from routes.auth.logout import Logout
 from routes.auth.currentuser import CurrentUser
+from routes.auth.currentuser import CurrentUserPatch
 from routes.auth.refresh import Refresh
 from routes.auth.currentuser import UserDelete
+from routes.auth.googleauth import GoogleAuth
 
 # Only From My Routes Goal folder
 from routes.goal.goals import GoalsGet
@@ -49,10 +51,13 @@ def not_found(error):
 api.add_resource(Signup, "/signup")
 api.add_resource(Login, "/login")
 api.add_resource(CurrentUser, "/current-user")
+api.add_resource(CurrentUserPatch, "/current-user/update")
 api.add_resource(Logout, "/logout")
 api.add_resource(Refresh, "/refresh")
 api.add_resource(UserDelete, "/delete-account")
 # api.add_resource(, "/user/edit")
+
+api.add_resource(GoogleAuth, "/google-auth")
 
 # Goals Routes (done)
 api.add_resource(CreateGoal, "/user/goal/create")

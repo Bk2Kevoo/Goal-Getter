@@ -89,15 +89,12 @@ budget_descriptions = {
 }
 
 
-def seed_users(num_users=10):  # You can specify the number of users to generate
+def seed_users(num_users=10): 
     users = []
     for _ in range(num_users):
-        # Generate a random name and email
         user = User(name=fake.name(), email=fake.email())
         user.password = ("Password11!!") 
         # user.created_at = datetime.now()
-        
-        # Add the user to the session and list
         db.session.add(user)
         users.append(user)
     db.session.commit()
