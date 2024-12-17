@@ -1,25 +1,41 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import styled from 'styled-components'
 import { GiHamburgerMenu } from 'react-icons/gi'
 import toast from 'react-hot-toast'
 
-function Header({ currentUser, updateUser }) {
+
+function Header({ currentUser, updateUser, getCookie }) {
     const [menu, setMenu] = useState(false)
+    const navigate = useNavigate()
   
     const handleLogout = async () => {
-      const resp = await fetch("/api/v1/logout", {method: "DELETE"})
-      if (resp.ok) {
-        updateUser(null)
-      } else {
-        const data = await resp.json()
-        toast.error(data.error)
+      try {
+        const resp = await fetch("/api/v1/logout", {
+          method: "DELETE",
+          headers: {
+            "X-CSRF-TOKEN": getCookie("csrf_access_token"),
+            "Authorization": `Bearer ${getCookie("jwt_token")}`
+          }
+        });
+    
+        if (resp.ok) {
+          updateUser(null);
+          toast.success("Logged out successfully.");
+          navigate("/about"); 
+        } else {
+          const data = await resp.json();
+          toast.error(data.error || "Failed to log out.");
+        }
+      } catch (err) {
+        toast.error("An error occurred while logging out.");
       }
-    }
+    };
+
     return (
       <Nav>
         <Logo>
-          <Link to="/">Goal Getter</Link>
+          <Link to="/dashboard">Goal Getter</Link>
         </Logo>
         <HamburgerMenu onClick={() => setMenu((prev) => !prev)}>
           <GiHamburgerMenu size={30} />

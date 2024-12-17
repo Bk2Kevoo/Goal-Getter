@@ -1,101 +1,92 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate, useOutletContext } from "react-router-dom";
 import styled from "styled-components";
+import toast from 'react-hot-toast';
+
 
 const Profile = () => {
   const { currentUser, updateUser, getCookie } = useOutletContext();
-
   const [name, setName] = useState(currentUser?.name || "");
   const [email, setEmail] = useState(currentUser?.email || "");
   const [password, setPassword] = useState(currentUser?.password || "");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    if (currentUser) {
+      setIsLoading(false);
+    }
+  }, [currentUser]);
+
   const handleUpdate = async () => {
-    setError(""); // Reset error message
-  
-    if (
-      name === currentUser.name &&
-      email === currentUser.email &&
-      password === ""
-    ) {
-      setError("No changes detected. Please update your credentials.");
-      return;
+    setError("");
+
+    if (!name || !email) return setError("Name and email are required.");
+    if (name === currentUser.name && email === currentUser.email && !password) {
+      return setError("No changes detected. Please update your credentials.");
     }
-  
-    if (!name || !email) {
-      setError("Name and email are required.");
-      return;
-    }
-  
-    const updatedUserData = { name, email };
-  
-    if (password) {
-      updatedUserData.password = password;
-    }
-  
+    const updatedUserData = { name, email, ...(password && { password }) };
     try {
       const csrfToken = getCookie("csrf_access_token");
-      if (!csrfToken) {
-        setError("CSRF token is missing");
-        return;
-      }
-  
-      const response = await fetch(`/api/v1/current-user`, {
+      if (!csrfToken) return setError("CSRF token is missing");
+
+      const response = await fetch(`/api/v1/current-user/update`, {
         method: "PATCH",
         headers: {
-          "Content-Type": "application/json",
+          "CONTENT-TYPE": "application/json",
           "X-CSRF-TOKEN": csrfToken,
         },
         body: JSON.stringify(updatedUserData),
       });
-  
       const data = await response.json();
-  
-      if (response.ok) {
-        updateUser(data);
-        setName(data.name);
-        setEmail(data.email);
-        setPassword(""); // Reset password field
-        alert("Profile updated successfully!");
-      } else {
-        setError(data.error || "Failed to update profile.");
-      }
+      if (!response.ok) 
+        throw new Error(data.error || "Failed to update profile.");
+      updateUser(data);
+      setName(data.name);
+      setEmail(data.email);
+      setPassword("");
+      localStorage.setItem("currentUser", JSON.stringify(data)); 
+      toast.success("Profile updated successfully!");
     } catch (err) {
-      setError("An error occurred while updating your profile.");
+      setError(err.message || "An error occurred while updating your profile.");
     }
   };
-  
+
   const handleDelete = async () => {
     const confirmDelete = window.confirm("Are you sure you want to delete your profile?");
     if (confirmDelete) {
       try {
-        const csrfToken = getCookie("csrf_access_token"); // Retrieve CSRF token from cookies
+        const csrfToken = getCookie("csrf_access_token");
         if (!csrfToken) {
-          setError("CSRF token is missing");
+          setError("Session expired. Redirecting to login...");
+          setTimeout(() => navigate("/login"), 3000);
           return;
         }
-  
+
         const response = await fetch(`/api/v1/delete-account`, {
           method: "DELETE",
           headers: {
-            "X-CSRF-TOKEN": csrfToken, // Add CSRF token to the request headers
+            "X-CSRF-TOKEN": csrfToken,
           },
         });
-  
+
         if (response.ok) {
           updateUser(null);
-          alert("Profile deleted successfully!");
-          navigate('/');
+          localStorage.removeItem("currentUser");
+          toast.success("Profile deleted successfully!");
+          navigate("/");
         } else {
-          setError("Failed to delete profile.");
+          const data = await response.json();
+          setError(data.error || "Failed to delete profile.");
         }
       } catch (err) {
         setError("An error occurred while deleting your profile.");
       }
     }
   };
-  if (!currentUser) {
+
+  if (isLoading) {
     return <div>Loading user information...</div>;
   }
 
@@ -142,6 +133,8 @@ const Profile = () => {
 
 export default Profile;
 
+
+// Styled Components
 const ProfileContainer = styled.div`
   max-width: 500px;
   margin: 0 auto;

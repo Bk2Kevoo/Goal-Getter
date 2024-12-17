@@ -1,25 +1,21 @@
-import { useNavigate, Outlet} from 'react-router-dom'
-// import { createGlobalStyle } from 'styled-components'
-import {useState, useEffect } from 'react'
+import { useNavigate, Outlet } from 'react-router-dom'
+import { useState, useEffect } from 'react'
 import Header from './nav/Header'
-import toast, { Toaster } from "react-hot-toast"
-// import 
-
+import toast, { Toaster } from 'react-hot-toast'
 
 const getCookie = (name) => {
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop().split(';').shift();
+  const value = `; ${document.cookie}`
+  const parts = value.split(`; ${name}=`)
+  if (parts.length === 2) return parts.pop().split(';').shift()
 }
 
 function App() {
-  
   const [currentUser, setCurrentUser] = useState(null)
   const navigate = useNavigate()
-  
 
-  const updateUser = (value) => setCurrentUser(value) 
-  
+
+  const updateUser = (value) => setCurrentUser(value)
+
   useEffect(() => {
     (async () => {
       const resp = await fetch("/api/v1/current-user", {
@@ -47,16 +43,15 @@ function App() {
       }
     })()
   }, [navigate])
-  
-  
 
-    return (
-        <>
-        <Header currentUser={currentUser} updateUser={updateUser} />
-        <Toaster />
-        <Outlet context={{ currentUser, updateUser, getCookie}} />
-        </>
-    )
+
+  return (
+    <>
+      <Header currentUser={currentUser} updateUser={updateUser} getCookie={getCookie} />
+      <Toaster />
+      <Outlet context={{ currentUser, updateUser, getCookie}} />
+    </>
+  )
 }
 
-export default App;
+export default App
