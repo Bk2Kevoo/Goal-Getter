@@ -1,57 +1,64 @@
-import { useNavigate, Outlet } from 'react-router-dom'
-import { useState, useEffect } from 'react'
-import Header from './nav/Header'
-import toast, { Toaster } from 'react-hot-toast'
+import { useNavigate, Outlet } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import Header from './nav/Header';
+import toast, { Toaster } from 'react-hot-toast';
 
 const getCookie = (name) => {
-  const value = `; ${document.cookie}`
-  const parts = value.split(`; ${name}=`)
-  if (parts.length === 2) return parts.pop().split(';').shift()
-}
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop().split(';').shift();
+};
 
 function App() {
-  const [currentUser, setCurrentUser] = useState(null)
-  const navigate = useNavigate()
+  const [currentUser, setCurrentUser] = useState(null);
+  const navigate = useNavigate();
 
-
-  const updateUser = (value) => setCurrentUser(value)
+  const updateUser = (value) => setCurrentUser(value);
 
   useEffect(() => {
-    (async () => {
-      const resp = await fetch("/api/v1/current-user", {
-        headers: {
-          "X-CSRF-TOKEN": getCookie("csrf_access_token")
-        }
-      })
-      const data = await resp.json()
-      if (resp.ok) {
-        updateUser(data)
-      } else {
-        const resp = await fetch("/api/v1/refresh", {
-          method: "POST",
+    const fetchCurrentUser = async () => {
+      try {
+        const resp = await fetch('/api/v1/current-user', {
           headers: {
-            "X-CSRF-TOKEN": getCookie("csrf_refresh_token")
-          }
-        })
-        const refreshData = await resp.json()
+            'X-CSRF-TOKEN': getCookie('csrf_access_token'),
+          },
+        });
+        const data = await resp.json();
         if (resp.ok) {
-          updateUser(refreshData)
+          updateUser(data);
         } else {
-          toast.error(data.error)
-          navigate("/register")
+          const refreshResp = await fetch('/api/v1/refresh', {
+            method: 'POST',
+            headers: {
+              'X-CSRF-TOKEN': getCookie('csrf_refresh_token'),
+            },
+          });
+          const refreshData = await refreshResp.json();
+          if (refreshResp.ok) {
+            updateUser(refreshData);
+          } else {
+            toast.error(refreshData.error || 'Failed to authenticate.');
+            navigate('/register');
+          }
         }
+      } catch (error) {
+        console.error('Error fetching current user:', error);
+        toast.error('An error occurred. Please try again later.');
+        navigate('/register');
       }
-    })()
-  }, [navigate])
+    };
 
+
+    fetchCurrentUser();
+  }, [navigate]);
 
   return (
     <>
       <Header currentUser={currentUser} updateUser={updateUser} getCookie={getCookie} />
       <Toaster />
-      <Outlet context={{ currentUser, updateUser, getCookie}} />
+      <Outlet context={{ currentUser, updateUser, getCookie }} />
     </>
-  )
+  );
 }
 
-export default App
+export default App;

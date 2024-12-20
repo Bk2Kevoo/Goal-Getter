@@ -11,6 +11,7 @@ from routes.auth.currentuser import CurrentUserPatch
 from routes.auth.refresh import Refresh
 from routes.auth.currentuser import UserDelete
 from routes.auth.googleauth import GoogleAuth
+from routes.auth.googleauth import ChangePassword
 
 # Only From My Routes Goal folder
 from routes.goal.goals import GoalsGet
@@ -58,34 +59,35 @@ api.add_resource(UserDelete, "/delete-account")
 # api.add_resource(, "/user/edit")
 
 api.add_resource(GoogleAuth, "/google-auth")
+api.add_resource(ChangePassword, "/change-password")
 
 # Goals Routes (done)
-api.add_resource(CreateGoal, "/user/goal/create")
-api.add_resource(GoalsGet, "/user/goals")  
-api.add_resource(GoalsById, "/user/goals/<int:goal_id>")
-api.add_resource(GoalsPatch, "/user/goals/<int:goal_id>/update") 
-api.add_resource(GoalsDelete, "/user/goals/<int:goal_id>/delete") 
+api.add_resource(CreateGoal, "/goal/create")
+api.add_resource(GoalsGet, "/goals")  
+api.add_resource(GoalsById, "/goals/<int:goal_id>")
+api.add_resource(GoalsPatch, "/goals/<int:goal_id>/update") 
+api.add_resource(GoalsDelete, "/goals/<int:goal_id>/delete") 
 
 # Categories Routes
-api.add_resource(CategoriesPost, "/user/categories/create")
-api.add_resource(CategoriesGet, "/user/categories")  
-api.add_resource(CategoriesById, "/user/categories/<int:category_id>")
-api.add_resource(CategoriesPatch, "/user/categories/<int:category_id>/update") 
-api.add_resource(CategoriesDelete, "/user/categories/<int:category_id>/delete") 
+api.add_resource(CategoriesPost, "/categories/create")
+api.add_resource(CategoriesGet, "/categories")  
+api.add_resource(CategoriesById, "/categories/<int:category_id>")
+api.add_resource(CategoriesPatch, "/categories/<int:category_id>/update") 
+api.add_resource(CategoriesDelete, "/categories/<int:category_id>/delete") 
 
 # Expenses Routes
-api.add_resource(ExpensesPost, "/user/expenses/create")
-api.add_resource(ExpensesGet, "/user/expenses")  
-api.add_resource(ExpensesById, "/user/expenses/<int:expense_id>")  
-api.add_resource(ExpensesPatch, "/user/expenses/<int:expense_id>/update") 
-api.add_resource(ExpensesDelete, "/user/expenses/<int:expense_id>/delete") 
+api.add_resource(ExpensesPost, "/expenses/create")
+api.add_resource(ExpensesGet, "/expenses")  
+api.add_resource(ExpensesById, "/expenses/<int:expense_id>")  
+api.add_resource(ExpensesPatch, "/expenses/<int:expense_id>/update") 
+api.add_resource(ExpensesDelete, "/expenses/<int:expense_id>/delete") 
 
 # Budgets Routes (done)
-api.add_resource(BudgetsPost, "/user/budgets/create")
-api.add_resource(BudgetsGet, "/user/budgets")  
-api.add_resource(BudgetsById, "/user/budgets/<int:budget_id>")
-api.add_resource(BudgetsPatch, "/user/budgets/<int:budget_id>/update") 
-api.add_resource(BudgetsDelete, "/user/budgets/<int:budget_id>/delete") 
+api.add_resource(BudgetsPost, "/budgets/create")
+api.add_resource(BudgetsGet, "/budgets")  
+api.add_resource(BudgetsById, "/budgets/<int:budget_id>")
+api.add_resource(BudgetsPatch, "/budgets/<int:budget_id>/update") 
+api.add_resource(BudgetsDelete, "/budgets/<int:budget_id>/delete") 
 
 
 
