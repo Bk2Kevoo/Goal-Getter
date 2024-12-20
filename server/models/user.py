@@ -23,7 +23,7 @@ class User(db.Model, SerializerMixin):
 
     def __repr__(self):
         return f"""
-            <Goal #{self.id}:
+            <User #{self.id}:
                 Name: {self.name}
                 Email: {self.email}>
         """

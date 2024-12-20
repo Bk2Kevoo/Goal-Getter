@@ -75,7 +75,7 @@ const Profile = () => {
           updateUser(null);
           localStorage.removeItem("currentUser");
           toast.success("Profile deleted successfully!");
-          navigate("/");
+          navigate("/about");
         } else {
           const data = await response.json();
           setError(data.error || "Failed to delete profile.");

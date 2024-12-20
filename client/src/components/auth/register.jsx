@@ -4,6 +4,8 @@ import { useOutletContext, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { Formik } from "formik";
 import { object, string } from "yup";
+// import { Modal } from "@mui/base/Modal"
+
 
 const signupSchema = object({
   name: string().min(3, "name must be 3 characters or more").required("name is required"),
@@ -27,7 +29,7 @@ const Registration = () => {
       email: decoded.email,
       name: decoded.name,
     };
-
+  
     try {
       const res = await fetch("/api/v1/google-auth", {
         method: "POST",
@@ -35,10 +37,13 @@ const Registration = () => {
         body: JSON.stringify(googleUserData),
       });
       const data = await res.json();
-
+  
       if (res.ok) {
-        toast.success(`Welcome, ${data.user.name}!`);
+        toast.success (`Welcome, ${data.user.name}!`);
         updateUser(data.user);
+
+      // If initial_sign_up is true then navigate to profile also In the backend I set a password on initial signup, but now in the front end i need it to open up a modal that will allow me to change the password hash that i set 
+      
         navigate("/dashboard");
       } else {
         toast.error(data.error || "Google authentication failed!");
@@ -47,11 +52,12 @@ const Registration = () => {
       toast.error("Something went wrong with Google Authentication!");
       console.error(error);
     }
-  }, [navigate, updateUser]); 
+  }, [navigate, updateUser]);
+
 
   useEffect(() => {
     if (currentUser) { 
-      navigate("/");  
+      navigate("/dashboard");  
     }
   }, [currentUser, navigate]); 
 
@@ -60,6 +66,7 @@ const Registration = () => {
       const script = document.createElement("script");
       script.src = "https://accounts.google.com/gsi/client";
       script.async = true;
+      script.defer = true;
       script.onload = () => {
         window.google.accounts.id.initialize({
           client_id: "404538436373-o8q5qka6pikreb68gcvc5cgul7rievpp.apps.googleusercontent.com",
@@ -73,6 +80,7 @@ const Registration = () => {
       document.body.appendChild(script);
     }
   }, [handleGoogleResponse]); 
+
 
   return (
     <Container>
