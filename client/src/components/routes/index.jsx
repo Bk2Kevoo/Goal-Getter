@@ -2,9 +2,11 @@ import { createBrowserRouter } from "react-router-dom"
 import App from '../App'
 import About from "../aboutpage/About"
 import Error from '../errors/ErrorPage'
-import Registration from "../auth/register"
+import Registration from "../auth/Register"
 import Profile from "../usersettings/profile"
 import Dashboard from "../dashboard/Dashboard"
+import ExpensesForm from "../expense/ExpenseForm"
+import Goals from "../goals/Goals"
 // import Profile from '../user/profile'
 
 export const router = createBrowserRouter([
@@ -28,6 +30,14 @@ export const router = createBrowserRouter([
             {
                 path: "/settings",
                 element: <Profile />
+            },
+            {
+                path: "/expenses/new",
+                element: <ExpensesForm />
+            },
+            {
+                path: "/goals/new",
+                element: <Goals />
             }
         ]
     }

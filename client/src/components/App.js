@@ -2,6 +2,7 @@ import { useNavigate, Outlet } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import Header from './nav/Header';
 import toast, { Toaster } from 'react-hot-toast';
+import { BudgetProvider } from './budget/BudgetContext';
 
 const getCookie = (name) => {
   const value = `; ${document.cookie}`;
@@ -48,15 +49,17 @@ function App() {
       }
     };
 
-
     fetchCurrentUser();
   }, [navigate]);
 
   return (
     <>
+    <BudgetProvider getCookie={getCookie}>
       <Header currentUser={currentUser} updateUser={updateUser} getCookie={getCookie} />
       <Toaster />
       <Outlet context={{ currentUser, updateUser, getCookie }} />
+    </BudgetProvider>
+
     </>
   );
 }

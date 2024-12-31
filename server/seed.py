@@ -88,6 +88,13 @@ budget_descriptions = {
     "The 'Just Because' Fund": "A fund for anything that pops up that doesn't quite fit anywhere else."
 }
 
+goal_names = [
+    "Vacation Fund", "Emergency Fund", "Home Renovation", "Wedding Savings", 
+    "Education Fund", "Retirement Savings", "Holiday Fund", "Car Repairs", 
+    "Tech Gadgets Fund", "Debt Payoff", "Health and Wellness", "Fitness Goals", 
+    "New Home Deposit", "Dream Car Fund", "Business Investment", "Family Fund",
+    "Child's Education", "Luxury Purchase Fund", "Vacation Trip", "Big Ticket Items"
+]
 
 def seed_users(num_users=10): 
     users = []
@@ -122,7 +129,7 @@ def seed_expenses(budgets):
                 description=description,
                 amount=round(uniform(10.0, 1000.0), 2),
                 date=fake.date_this_year(after_today=False, before_today=True),
-                budget_id=budget.id  # Link to the budget
+                budget_id=budget.id 
             )
             expenses.append(expense)
             db.session.add(expense)
@@ -137,7 +144,12 @@ def seed_budgets(users, categories, num_budgets=10):
         start_date = fake.date_this_year(after_today=True, before_today=False)
         end_date = start_date + timedelta(days=randint(30, 365))
 
-        # Link budget to a user and a category
+        # Add some basic error handling or logging here to avoid duplicates
+        existing_budget = Budget.query.filter_by(name=name).first()
+        if existing_budget:
+            print(f"Budget with name {name} already exists, skipping...")
+            continue
+
         budget = Budget(
             name=name,
             description=description,
@@ -146,7 +158,7 @@ def seed_budgets(users, categories, num_budgets=10):
             end_date=end_date,
             is_active=fake.boolean(),
             user_id=choice(users).id,
-            category_id=choice(categories).id  # Ensuring valid category is selected
+            category_id=choice(categories).id 
         )
         budgets.append(budget)
         db.session.add(budget)
@@ -158,17 +170,31 @@ def seed_goals(users, num_goals=10):
     for _ in range(num_goals):
         user = choice(users)
         goal_amount = round(uniform(500.0, 5000.0), 2)
-        goal = Goal(
-            goal_amount=goal_amount,
-            current_savings=round(uniform(0.0, goal_amount), 2),
-            is_completed=fake.boolean(chance_of_getting_true=30),
-            date=fake.date_this_year(after_today=False, before_today=True),
-            user_id=user.id  # Link goal to the user
-        )
-        goals.append(goal)
-        db.session.add(goal)
+        goal_name = choice(goal_names)
+
+        # Use start_date and end_date instead of date
+        start_date = fake.date_this_year(after_today=False, before_today=True)
+        end_date = start_date + timedelta(days=randint(30, 365))
+
+        try:
+            goal = Goal(
+                name=goal_name, 
+                goal_amount=goal_amount,
+                current_savings=round(uniform(0.0, goal_amount), 2),
+                is_completed=fake.boolean(chance_of_getting_true=30),
+                start_date=start_date,  # Use start_date
+                end_date=end_date,      # Use end_date
+                user_id=user.id 
+            )
+            db.session.add(goal)
+            goals.append(goal)
+        except ValueError as e:
+            print(f"Skipping goal creation for {goal_name} due to error: {e}")
+            continue  # Continue with the next iteration if there's an error
     db.session.commit()
     return goals
+
+
 
 def run_seeds():
     print("Seeding database...")
