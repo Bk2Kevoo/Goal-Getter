@@ -13,7 +13,7 @@ const goalSchema = Yup.object({
     current_savings: Yup.number().required('Amount is required').positive('Amount must be positive'),
     start_date: Yup.date()
         .required('Start date is required')
-        .min(new Date(), 'Start date cannot be in the past'),
+        .min(new Date(new Date().setHours(0, 0, 0, 0)), 'Start date cannot be in the past'), // Corrected to pass a valid Date object
     end_date: Yup.date()
         .required('End date is required')
         .min(Yup.ref('start_date'), 'End date cannot be before the start date'),
@@ -21,8 +21,8 @@ const goalSchema = Yup.object({
 });
 
 const EditGoal = () => {
-    const { id } = useParams(); // To get the goal ID from the URL
-    const { getGoalById, editGoal, deleteGoal } = useBudgets(); // Include deleteGoal
+    const { id } = useParams(); 
+    const { getGoalById, editGoal, deleteGoal } = useBudgets(); 
     const [goal, setGoal] = useState(null);
     const navigate = useNavigate();
 
@@ -34,11 +34,26 @@ const EditGoal = () => {
         fetchGoal();
     }, [id, getGoalById]);
 
+    
+
     const handleSubmit = async (values, { setSubmitting }) => {
+        const isCompleted = values.is_completed === "true";
+        if (
+            values.name === goal.name &&
+            values.goal_amount === goal.goal_amount &&
+            values.current_savings === goal.current_savings &&
+            values.start_date === goal.start_date.split('T')[0] &&
+            values.end_date === goal.end_date.split('T')[0] &&
+            isCompleted === goal.is_completed
+        ) {
+            toast.error("No changes detected. Please modify to update.");
+            setSubmitting(false); 
+            return;
+        }
+
         try {
-            await editGoal({ ...values, id });
-            toast.success("Goal updated successfully!");
-            navigate('/dashboard'); // Redirect after update
+            await editGoal({ ...values, id, is_completed: isCompleted });
+            navigate('/dashboard'); 
         } catch (error) {
             console.error('Error updating goal:', error);
             toast.error("Failed to update goal. Please try again.");
@@ -52,7 +67,6 @@ const EditGoal = () => {
         if (confirmed) {
             try {
                 await deleteGoal(id);
-                toast.success("Goal deleted successfully!");
                 navigate('/dashboard'); 
             } catch (error) {
                 console.error('Error deleting goal:', error);

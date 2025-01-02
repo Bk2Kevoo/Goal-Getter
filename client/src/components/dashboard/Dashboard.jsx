@@ -14,11 +14,9 @@ const Dashboard = () => {
         fetchBudgets(); 
     }, [expenses, goals, fetchExpenses, fetchGoals, fetchBudgets]);
 
-
     if (budgets.length === 0 && expenses.length === 0 && goals.length === 0) {
         return <p>Loading your financial data...</p>; 
     }
-
 
     const expenseLabels = expenses.length > 0
         ? expenses.map((expense) => `${expense.description}: $${expense.amount.toFixed(2)}`)
@@ -56,18 +54,30 @@ const Dashboard = () => {
                 <div style={{ width: '30%', minWidth: '300px' }}>
                     <h2 style={{ textAlign: 'center' }}>Expenses Breakdown</h2>
                     <Pie data={expenseChartData} />
-                    <button
-                        style={{
-                            display: 'block',
-                            margin: '1rem auto',
-                            padding: '0.5rem 1rem',
-                            fontSize: '1rem',
-                            cursor: 'pointer'
-                        }}
-                        onClick={() => navigate('/expenses/new')}
-                    >
-                        Add an Expense
-                    </button>
+                    <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>
+                        <button
+                            style={{
+                                padding: '0.5rem 1rem',
+                                fontSize: '1rem',
+                                cursor: 'pointer'
+                            }}
+                            onClick={() => navigate('/expenses/new')}
+                        >
+                            Add an Expense
+                        </button>
+                        {expenses.length > 0 && (
+                            <button
+                                style={{
+                                    padding: '0.5rem 1rem',
+                                    fontSize: '1rem',
+                                    cursor: 'pointer'
+                                }}
+                                onClick={() => navigate(`/expenses/update`)} // Navigate to edit the first expense
+                            >
+                                Edit an Expense
+                            </button>
+                        )}
+                    </div>
                 </div>
                 <div style={{ width: '50%', minWidth: '500px' }}>
                     <h2 style={{ textAlign: 'center' }}>Goals Overview</h2>
@@ -108,7 +118,7 @@ const Dashboard = () => {
                                         </div>
                                         <p><strong>Current Savings:</strong> ${goal.current_savings.toFixed(2)}</p>
                                         <p><strong>Goal Amount:</strong> ${goal.goal_amount.toFixed(2)}</p>
-                                        <p><strong>Is Completed:</strong> {goal.is_completed === 'completed' ? 'Completed' : 'Not Completed'}</p>                                        <span
+                                        <p><strong>Is Completed:</strong> {goal.is_completed ? 'Completed' : 'Not Completed'}</p><span
                                             style={{
                                                 position: 'absolute',
                                                 top: '10px',

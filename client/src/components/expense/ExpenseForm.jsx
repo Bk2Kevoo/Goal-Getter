@@ -12,16 +12,14 @@ const validationSchema = object({
   date: date().required('Date is required').max(new Date(), 'Date cannot be in the future'),
 });
 
-const ExpenseForm = ({ initialValues, onSubmit }) => {
+const ExpenseForm = ({ initialValues }) => {
   const { addExpense } = useBudgets()
   // const { getCookie } = useOutletContext(); 
   const navigate = useNavigate(); 
   
     const handleFormSubmit = async (values) => {
       try {
-        // Use addExpense from the context to add the new expense
         await addExpense(values);
-        // Redirect to dashboard after successful submission
         navigate('/dashboard');
       } catch (error) {
         console.error('Error adding expense:', error);
