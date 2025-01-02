@@ -10,57 +10,53 @@ const getCookie = (name) => {
   if (parts.length === 2) return parts.pop().split(';').shift();
 };
 
+const fetchCurrentUser = async (getCookie, navigate) => {
+  try {
+    const resp = await fetch('/api/v1/current-user', {
+      headers: {
+        'X-CSRF-TOKEN': getCookie('csrf_access_token'),
+      },
+    });
+    const data = await resp.json();
+    if (resp.ok) return data;
+
+    const refreshResp = await fetch('/api/v1/refresh', {
+      method: 'POST',
+      headers: {
+        'X-CSRF-TOKEN': getCookie('csrf_refresh_token'),
+      },
+    });
+    const refreshData = await refreshResp.json();
+    if (refreshResp.ok) return refreshData;
+
+    throw new Error(refreshData.error || 'Failed to authenticate.');
+  } catch (error) {
+    toast.error(error.message || 'An error occurred. Please try again later.');
+    navigate('/register');
+  }
+};
+
 function App() {
   const [currentUser, setCurrentUser] = useState(null);
   const navigate = useNavigate();
 
-  const updateUser = (value) => setCurrentUser(value);
-
   useEffect(() => {
-    const fetchCurrentUser = async () => {
-      try {
-        const resp = await fetch('/api/v1/current-user', {
-          headers: {
-            'X-CSRF-TOKEN': getCookie('csrf_access_token'),
-          },
-        });
-        const data = await resp.json();
-        if (resp.ok) {
-          updateUser(data);
-        } else {
-          const refreshResp = await fetch('/api/v1/refresh', {
-            method: 'POST',
-            headers: {
-              'X-CSRF-TOKEN': getCookie('csrf_refresh_token'),
-            },
-          });
-          const refreshData = await refreshResp.json();
-          if (refreshResp.ok) {
-            updateUser(refreshData);
-          } else {
-            toast.error(refreshData.error || 'Failed to authenticate.');
-            navigate('/register');
-          }
-        }
-      } catch (error) {
-        console.error('Error fetching current user:', error);
-        toast.error('An error occurred. Please try again later.');
-        navigate('/register');
-      }
+    const getUser = async () => {
+      const user = await fetchCurrentUser(getCookie, navigate);
+      if (user) setCurrentUser(user);
     };
 
-    fetchCurrentUser();
+    getUser();
   }, [navigate]);
 
+  const updateUser = (value) => setCurrentUser(value);
+
   return (
-    <>
     <BudgetProvider getCookie={getCookie}>
       <Header currentUser={currentUser} updateUser={updateUser} getCookie={getCookie} />
       <Toaster />
       <Outlet context={{ currentUser, updateUser, getCookie }} />
     </BudgetProvider>
-
-    </>
   );
 }
 

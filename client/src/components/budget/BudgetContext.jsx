@@ -17,12 +17,15 @@ export const BudgetProvider = ({ children, getCookie }) => {
         if (budgetsFetched) return; // Skip if already fetched
         try {
             const response = await fetch("/api/v1/budgets");
+            if (!response.ok) {
+                throw new Error(`Failed to fetch: ${response.statusText}`);
+            }
             const data = await response.json();
-            setBudgets(data);
+            console.log(data); // Debug the response structure
+            setBudgets(data.budgets || []); // Fallback to an empty array
             setBudgetsFetched(true);
         } catch (error) {
-            console.error("Error fetching budgets", error);
-            toast.error("Failed to fetch budgets. Please try again!");
+            console.error("Error fetching budgets:", error);
         }
     };
 
@@ -67,20 +70,28 @@ export const BudgetProvider = ({ children, getCookie }) => {
         }
     };
 
-    const addExpense = async (newExpense) => {
+    const addExpense = async (expense) => {
         try {
-            const response = await fetch("/api/v1/expenses/create", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(newExpense),
-            });
-            const savedExpense = await response.json();
-            setExpenses((prev) => [...prev, savedExpense]);
-        } catch (error) {
-            console.log("Error adding expense", error);
-            toast.error("Failed to add expense. Please try again!");
+            const response = await fetch('/api/v1/expenses/create', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                  'X-CSRF-TOKEN': getCookie('csrf_access_token'),
+                },
+                credentials: 'include',
+                body: JSON.stringify(expense),
+              });
+            const data = await response.json()
+            if (!response.ok) {
+                throw new Error(data.error);
+            }
+            setExpenses((prev) => [data, ...prev])
+          }catch (error){
+            toast.error(error);
+          }
         }
-    };
+
+      
 
     const addGoal = async (newGoal) => {
     const token = getCookie('authToken');  // Get token from cookies
@@ -99,9 +110,10 @@ export const BudgetProvider = ({ children, getCookie }) => {
         }
         const savedGoal = await response.json();
         setGoals((prev) => [...prev, savedGoal]);
+        return 201
     } catch (error) {
-        console.log("Error adding goal", error);
-        toast.error("Failed to add goal. Please try again!");
+        toast.error("Failed to add goal. Please try again!")
+        return 400;
     }
 };
 
@@ -128,7 +140,10 @@ export const BudgetProvider = ({ children, getCookie }) => {
         try {
             const response = await fetch(`/api/v1/expenses/${updatedExpense.id}/update`, {
                 method: "PATCH",
-                headers: { "Content-Type": "application/json" },
+                headers: {
+                    "Content-Type": "application/json",
+                    'X-CSRF-TOKEN': getCookie('csrf_access_token'),
+                    },
                 
                 body: JSON.stringify(updatedExpense),
             });
@@ -147,11 +162,16 @@ export const BudgetProvider = ({ children, getCookie }) => {
 
     const editGoal = async (updatedGoal) => {
         try {
+            const token = getCookie('authToken');
             const response = await fetch(`/api/v1/goals/${updatedGoal.id}/update`, {
                 method: "PATCH",
-                headers: { "Content-Type": "application/json" },
+                headers: { 
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,  // Add Authorization header with Bearer token
+                    'X-CSRF-TOKEN': getCookie('csrf_access_token')
+                },
                 body: JSON.stringify(updatedGoal),
-            });
+                });
             const savedGoal = await response.json();
             setGoals((prev) =>
                 prev.map((goal) =>
@@ -165,6 +185,55 @@ export const BudgetProvider = ({ children, getCookie }) => {
         }
     };
 
+    const getGoalById = async (goalId) => {
+        try {
+          const response = await fetch(`/api/v1/goals/${goalId}`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+      
+          if (!response.ok) {
+            throw new Error(`Failed to fetch goal: ${response.statusText}`);
+          }
+      
+          const goal = await response.json();
+          return goal;
+        } catch (error) {
+          console.error("Error fetching goal by ID:", error);
+          throw error;
+        }
+      };
+
+      const deleteGoal = async (goalId) => {
+        try {
+            const token = getCookie("authToken"); // Authentication token
+            const csrfToken = getCookie("csrf_access_token"); // CSRF token
+    
+            const response = await fetch(`/api/v1/goals/${goalId}/delete`, {
+                method: "DELETE",
+                headers: {
+                    "Authorization": `Bearer ${token}`, 
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": csrfToken, // Add CSRF token here
+                },
+                credentials: "include", 
+            });
+    
+            if (!response.ok) {
+                throw new Error("Failed to delete goal");
+            }
+    
+            const result = await response.json();
+            toast.success("Goal deleted and cookies cleared successfully!");
+            return result;
+        } catch (error) {
+            console.error("Error deleting goal:", error);
+            toast.error("Failed to delete goal. Please try again!");
+            throw error; // Re-throw to handle in the caller
+        }
+    };
     return (
         <BudgetContext.Provider
             value={{
@@ -180,6 +249,8 @@ export const BudgetProvider = ({ children, getCookie }) => {
                 fetchBudgets,  
                 fetchExpenses, 
                 fetchGoals,    
+                getGoalById,
+                deleteGoal,
             }}
         >
             {children}

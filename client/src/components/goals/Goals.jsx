@@ -6,6 +6,9 @@ import { number, object, date, string } from "yup";
 import * as Yup from "yup";
 import { useBudgets } from "../budget/BudgetContext";
 
+const today = new Date();
+today.setHours(0, 0, 0, 0); // Set time to midnight
+
 const goalSchema = object({
   name: string()
     .min(3, "Name must be 3 characters or more")
@@ -18,7 +21,7 @@ const goalSchema = object({
     .positive("Amount must be positive"),
   start_date: date()
     .required("Start date is required")
-    .min(new Date(), "Start date cannot be in the past"),
+    .min(today, "Start date cannot be in the past"), // Use normalized `today`
   end_date: date()
     .required("End date is required")
     .min(Yup.ref("start_date"), "End date cannot be before the start date"),
@@ -26,43 +29,50 @@ const goalSchema = object({
 
 const Goals = ({ initialValues }) => {
   const { getCookie } = useOutletContext();
-  const { addGoal } = useBudgets(); // Correct invocation of the hook
+  const { addGoal } = useBudgets(); 
   const navigate = useNavigate();
 
-  const handleFormSubmit = async (values) => {
-    try {
-      console.log("Submitting values:", values);
-      const csrfToken = getCookie('csrf_access_token');
-      const response = await fetch('/api/v1/goal/create', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRF-TOKEN': csrfToken,
-        },
-        body: JSON.stringify({
-          name: values.name,
-          goal_amount: values.goal_amount,
-          current_savings: values.current_savings,
-          start_date: values.start_date, // Use start_date
-          end_date: values.end_date,     // Use end_date
-        }),
-      });
-  
-      if (response.ok) {
-        const data = await response.json();
-        addGoal(data); // Update state with the new goal
-        toast.success("Goal added successfully!");
-        navigate('/dashboard'); // Redirect to the dashboard
-      } else {
-        const errorData = await response.json();
-        toast.error(errorData.error || "Failed to add goal. Please try again!");
-      }
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      toast.error("Failed to submit the form. Please try again!");
-    }
-  };
+ const handleFormSubmit = async (values) => {
+    // try {
+    //     const csrfToken = getCookie('csrf_access_token');
+    //     const response = await fetch('/api/v1/goal/create', {
+    //         method: 'POST',
+    //         headers: {
+    //             'Content-Type': 'application/json',
+    //             'X-CSRF-TOKEN': csrfToken,
+        //     },
+        //     body: JSON.stringify({
+        //         name: values.name,
+        //         goal_amount: values.goal_amount,
+        //         current_savings: values.current_savings,
+        //         start_date: values.start_date,
+        //         end_date: values.end_date,
+        //     }),
+        // });
 
+    //     if (response.ok) {
+    //         const savedGoal = await response.json();
+    //         // Add goal to the state without fetching again
+            const status = await addGoal({
+              name: values.name,
+              goal_amount: values.goal_amount,
+              current_savings: values.current_savings,
+              start_date: values.start_date,
+              end_date: values.end_date,
+          });
+    //         toast.success("Goal added successfully!");
+            if (status === 201) {
+              navigate('/dashboard'); // Redirect to the dashboard
+            }
+    //     } else {
+    //         const errorData = await response.json();
+    //         toast.error(errorData.error || "Failed to add goal. Please try again!");
+    //     }
+    // } catch (error) {
+    //     console.error('Error submitting form:', error);
+    //     toast.error("Failed to submit the form. Please try again!");
+    // }
+};
   const todayDate = new Date().toISOString().split('T')[0];
 
   return (

@@ -31,14 +31,14 @@ const Registration = () => {
     };
   
     try {
-      const res = await fetch("/api/v1/google-auth", {
+      const response = await fetch("/api/v1/google-auth", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(googleUserData),
       });
-      const data = await res.json();
+      const data = await response.json();
   
-      if (res.ok) {
+      if (response.ok) {
         toast.success (`Welcome, ${data.user.name}!`);
         updateUser(data.user);
 
