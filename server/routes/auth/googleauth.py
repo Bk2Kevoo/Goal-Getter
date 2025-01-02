@@ -31,7 +31,6 @@ class GoogleAuth(Resource):
                     user.password = token_hex(8)
                     initial_sign_up = True
                     db.session.add(user)
-                    # import ipdb; ipdb.set_trace()
                     db.session.commit() 
                     print(f"New user created: {user.name} ({user.email})")
                 except IntegrityError as e:
