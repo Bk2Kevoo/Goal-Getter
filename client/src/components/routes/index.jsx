@@ -7,6 +7,7 @@ import Profile from "../usersettings/profile"
 import Dashboard from "../dashboard/Dashboard"
 import ExpensesForm from "../expense/ExpenseForm"
 import Goals from "../goals/Goals"
+import EditGoal from "../goals/EditGoalForm"
 // import Profile from '../user/profile'
 
 export const router = createBrowserRouter([
@@ -38,6 +39,10 @@ export const router = createBrowserRouter([
             {
                 path: "/goals/new",
                 element: <Goals />
+            },
+            {
+                path:"/goals/:id/update",
+                element: <EditGoal />
             }
         ]
     }
