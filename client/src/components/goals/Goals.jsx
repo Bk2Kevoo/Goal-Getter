@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import { useOutletContext, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { Formik, Form, ErrorMessage, Field } from "formik";
 import { number, object, date, string } from "yup";
@@ -7,7 +7,7 @@ import * as Yup from "yup";
 import { useBudgets } from "../budget/BudgetContext";
 
 const today = new Date();
-today.setHours(0, 0, 0, 0); // Set time to midnight
+today.setHours(0, 0, 0, 0); 
 
 const goalSchema = object({
   name: string()
@@ -21,57 +21,31 @@ const goalSchema = object({
     .positive("Amount must be positive"),
   start_date: date()
     .required("Start date is required")
-    .min(today, "Start date cannot be in the past"), // Use normalized `today`
+    .min(today, "Start date cannot be in the past"), 
   end_date: date()
     .required("End date is required")
     .min(Yup.ref("start_date"), "End date cannot be before the start date"),
 });
 
 const Goals = ({ initialValues }) => {
-  const { getCookie } = useOutletContext();
   const { addGoal } = useBudgets(); 
   const navigate = useNavigate();
 
  const handleFormSubmit = async (values) => {
-    // try {
-    //     const csrfToken = getCookie('csrf_access_token');
-    //     const response = await fetch('/api/v1/goal/create', {
-    //         method: 'POST',
-    //         headers: {
-    //             'Content-Type': 'application/json',
-    //             'X-CSRF-TOKEN': csrfToken,
-        //     },
-        //     body: JSON.stringify({
-        //         name: values.name,
-        //         goal_amount: values.goal_amount,
-        //         current_savings: values.current_savings,
-        //         start_date: values.start_date,
-        //         end_date: values.end_date,
-        //     }),
-        // });
-
-    //     if (response.ok) {
-    //         const savedGoal = await response.json();
-    //         // Add goal to the state without fetching again
-            const status = await addGoal({
-              name: values.name,
-              goal_amount: values.goal_amount,
-              current_savings: values.current_savings,
-              start_date: values.start_date,
-              end_date: values.end_date,
-          });
-    //         toast.success("Goal added successfully!");
-            if (status === 201) {
-              navigate('/dashboard'); // Redirect to the dashboard
-            }
-    //     } else {
-    //         const errorData = await response.json();
-    //         toast.error(errorData.error || "Failed to add goal. Please try again!");
-    //     }
-    // } catch (error) {
-    //     console.error('Error submitting form:', error);
-    //     toast.error("Failed to submit the form. Please try again!");
-    // }
+  try {
+    const status = await addGoal({
+      name: values.name,
+      goal_amount: values.goal_amount,
+      current_savings: values.current_savings,
+      start_date: values.start_date,
+      end_date: values.end_date,
+  });
+    if (status === 201) {
+      navigate('/dashboard');
+    }
+  }catch (error) {
+    toast.error(error)
+  }
 };
   const todayDate = new Date().toISOString().split('T')[0];
 
