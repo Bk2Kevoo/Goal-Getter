@@ -1,33 +1,30 @@
-from routes.__init__ import make_response, Resource
-from routes.__init__ import jwt_required, request, db
+from datetime import datetime
+from flask import request, make_response
+from flask_restful import Resource
 from models.expense import Expense
 from models.budget import Budget
-from flask_jwt_extended import current_user
+from flask_jwt_extended import jwt_required, current_user
+from routes.__init__ import db
+
 
 class ExpensesPatch(Resource):
     @jwt_required()
-    def patch(self):
+    def patch(self, expense_id):  # Accept `expense_id` as a URL parameter
         try:
-            data = request.get_json()
+            # Find the expense by its ID
+            expense = Expense.query.filter_by(id=expense_id).first()
 
-            # Ensure expense_id is provided in the request data
-            if "expense_id" not in data:
-                return make_response({"error": "Expense ID is required."}, 400)
-
-            # Find the expense by its ID and ensure the current user owns it
-            expense = Expense.query.filter_by(id=data["expense_id"], user_id=current_user.id).first()
-
-            # Check if the expense exists or if the user is authorized to update it
+            # Check if the expense exists
             if not expense:
-                return make_response({"error": "Expense not found or you are not authorized to update this expense."}, 404)
+                return make_response({"error": "Expense not found."}, 404)
 
-            # If no budget_id is provided, fetch the current user's active budget
-            if "budget_id" not in data:
-                budget = db.session.query(Budget).filter_by(user_id=current_user.id, is_active=True).first()
-                if budget:
-                    expense.budget_id = budget.id  # Automatically associate with the active budget
-                else:
-                    return make_response({"error": "No active budget found."}, 400)
+            # Check if the associated budget belongs to the current user
+            budget = Budget.query.filter_by(id=expense.budget_id, user_id=current_user.id).first()
+            if not budget:
+                return make_response({"error": "You are not authorized to update this expense."}, 403)
+
+            # Extract the data from the request body
+            data = request.get_json()
 
             # Update fields based on the request data
             if "amount" in data:
@@ -35,7 +32,11 @@ class ExpensesPatch(Resource):
             if "description" in data:
                 expense.description = data["description"]
             if "date" in data:
-                expense.date = data["date"]  # Update date if provided
+                # Convert the date string to a Python date object
+                try:
+                    expense.date = datetime.strptime(data["date"], "%Y-%m-%d").date()
+                except ValueError:
+                    return make_response({"error": "Invalid date format. Use YYYY-MM-DD."}, 400)
 
             # Commit the changes to the database
             db.session.commit()

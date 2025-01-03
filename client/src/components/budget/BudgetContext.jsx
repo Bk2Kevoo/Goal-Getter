@@ -147,6 +147,36 @@ toast.success("Expense updated successfully!");
 }
 };
 
+const deleteExpense = async (expenseId) => {
+    try {
+        const token = getCookie("authToken");
+        const csrfToken = getCookie("csrf_access_token");
+        
+        const response = await fetch(`/api/v1/expenses/${expenseId}/delete`, {
+            method: "DELETE",
+            headers: {
+                "Authorization": `Bearer ${token}`, 
+                "Content-Type": "application/json",
+                "X-CSRF-TOKEN": csrfToken,
+            },
+            credentials: "include", 
+        });
+
+        if (!response.ok) {
+            throw new Error("Failed to delete expense");
+        }
+
+        const result = await response.json();
+        toast.success("Expense deleted successfully!");
+        return result;
+    } catch (error) {
+        console.error("Error deleting expense:", error);
+        toast.error("Failed to delete expense. Please try again!");
+        throw error; 
+    }
+};
+
+
 // Goals CRUD
 
 const fetchGoals = async () => {
@@ -232,11 +262,11 @@ try {
         }
       };
 
-      const deleteGoal = async (goalId) => {
+    const deleteGoal = async (goalId) => {
         try {
             const token = getCookie("authToken");
             const csrfToken = getCookie("csrf_access_token");
-    
+        
             const response = await fetch(`/api/v1/goals/${goalId}/delete`, {
                 method: "DELETE",
                 headers: {
@@ -246,18 +276,17 @@ try {
                 },
                 credentials: "include", 
             });
-    
+        
             if (!response.ok) {
                 throw new Error("Failed to delete goal");
             }
-    
-            const result = await response.json();
-            toast.success("Goal deleted and cookies cleared successfully!");
-            return result;
+        
+            setGoals((prevGoals) => prevGoals.filter((goal) => goal.id !== goalId));
+            toast.success("Goal deleted successfully!");
         } catch (error) {
             console.error("Error deleting goal:", error);
             toast.error("Failed to delete goal. Please try again!");
-            throw error; // Re-throw to handle in the caller
+            throw error; 
         }
     };
 
@@ -280,6 +309,7 @@ try {
                 getGoalById,
                 deleteGoal,
                 getExpenseById,
+                deleteExpense,
             }}
         >
             {children}

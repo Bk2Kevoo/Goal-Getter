@@ -1,13 +1,12 @@
-import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import styled from 'styled-components'
-import { GiHamburgerMenu } from 'react-icons/gi'
-import toast from 'react-hot-toast'
-
+import { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import styled from 'styled-components';
+import { GiHamburgerMenu } from 'react-icons/gi';
+import toast from 'react-hot-toast';
 
 function Header({ currentUser, updateUser, getCookie }) {
-    const [menu, setMenu] = useState(false)
-    const navigate = useNavigate()
+    const [menu, setMenu] = useState(false);
+    const navigate = useNavigate();
   
     const handleLogout = async () => {
       try {
@@ -15,8 +14,8 @@ function Header({ currentUser, updateUser, getCookie }) {
           method: "DELETE",
           headers: {
             "X-CSRF-TOKEN": getCookie("csrf_access_token"),
-            "Authorization": `Bearer ${getCookie("jwt_token")}`
-          }
+            "Authorization": `Bearer ${getCookie("jwt_token")}`,
+          },
         });
     
         if (resp.ok) {
@@ -32,10 +31,19 @@ function Header({ currentUser, updateUser, getCookie }) {
       }
     };
 
+    const handleLogoClick = () => {
+      if (currentUser) {
+        navigate("/dashboard");
+      } else {
+        toast.error("Please sign in first.");
+        navigate("/register"); 
+      }
+    };
+
     return (
       <Nav>
-        <Logo>
-          <Link to="/dashboard">Goal Getter</Link>
+        <Logo onClick={handleLogoClick}>
+          Goal Getter
         </Logo>
         <HamburgerMenu onClick={() => setMenu((prev) => !prev)}>
           <GiHamburgerMenu size={30} />
@@ -90,6 +98,7 @@ function Header({ currentUser, updateUser, getCookie }) {
   const Logo = styled.div`
     font-family: "Splash", cursive;
     font-size: 24px;
+    cursor: pointer; /* Added for better UX */
   
     a {
       text-decoration: none;

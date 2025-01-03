@@ -51,7 +51,7 @@ const Dashboard = () => {
         <div>
             <h1 style={{ textAlign: 'center', marginBottom: '2rem' }}>Dashboard</h1>
             <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '2rem' }}>
-                <div style={{ width: '30%', minWidth: '300px' }}>
+                <div style={{ width: '25%', minWidth: '300px' }}>
                     <h2 style={{ textAlign: 'center' }}>Expenses Breakdown</h2>
                     <Pie data={expenseChartData} />
                     <div style={{ display: 'flex', justifyContent: 'center', gap: '1rem' }}>

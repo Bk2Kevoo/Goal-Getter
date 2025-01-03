@@ -15,22 +15,28 @@ class CurrentUserPatch(Resource):
     @jwt_required()
     def patch(self):
         try:
-            user = current_user
-            data = request.get_json()
+            user = current_user  
+            data = request.get_json()  
 
             if not data:
                 return make_response({"error": "No data provided"}, 400)
+
             if "name" in data:
                 user.name = data["name"]
             if "email" in data:
                 user.email = data["email"]
             if "password" in data:
-                user.set_password(data["password"]) 
-            db.session.commit()
-            return make_response({"message": "User updated successfully", "user": user.to_dict()}, 200)
+                user.password = data["password"] 
+
+            db.session.commit()  
+            return make_response(
+                {"message": "User updated successfully", "user": user.to_dict()},
+                200,
+            )
         except Exception as e:
-            db.session.rollback()
+            db.session.rollback()  # Rollback in case of an error
             return make_response({"error": str(e)}, 500)
+
         
 class UserDelete(Resource):
     @jwt_required() 

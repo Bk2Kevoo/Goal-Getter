@@ -1,5 +1,5 @@
-import { useNavigate, Outlet } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useNavigate, Outlet, useLocation } from 'react-router-dom';
+import { useState, useEffect, useCallback } from 'react';
 import Header from './nav/Header';
 import toast, { Toaster } from 'react-hot-toast';
 import { BudgetProvider } from './budget/BudgetContext';
@@ -28,8 +28,6 @@ const fetchCurrentUser = async (getCookie, navigate) => {
     });
     const refreshData = await refreshResp.json();
     if (refreshResp.ok) return refreshData;
-
-    throw new Error(refreshData.error || 'Failed to authenticate.');
   } catch (error) {
     toast.error(error.message || 'An error occurred. Please try again later.');
     navigate('/register');
@@ -39,15 +37,20 @@ const fetchCurrentUser = async (getCookie, navigate) => {
 function App() {
   const [currentUser, setCurrentUser] = useState(null);
   const navigate = useNavigate();
+  const location = useLocation(); // Track route changes
+
+  const fetchUserData = useCallback(async () => {
+    const user = await fetchCurrentUser(getCookie, navigate);
+    if (user) setCurrentUser(user);
+  }, [navigate]);
 
   useEffect(() => {
-    const getUser = async () => {
-      const user = await fetchCurrentUser(getCookie, navigate);
-      if (user) setCurrentUser(user);
-    };
+    fetchUserData();
+  }, [fetchUserData]); 
 
-    getUser();
-  }, [navigate]);
+  useEffect(() => {
+    fetchUserData(); 
+  }, [location, fetchUserData]); 
 
   const updateUser = (value) => setCurrentUser(value);
 

@@ -4,134 +4,146 @@ import styled from "styled-components";
 import toast from 'react-hot-toast';
 
 
-const Profile = () => {
-  const { currentUser, updateUser, getCookie } = useOutletContext();
-  const [name, setName] = useState(currentUser?.name || "");
-  const [email, setEmail] = useState(currentUser?.email || "");
-  const [password, setPassword] = useState(currentUser?.password || "");
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(true);
-  const navigate = useNavigate();
+  const Profile = () => {
+    const { currentUser, updateUser, getCookie } = useOutletContext();
+    const [name, setName] = useState(currentUser?.name || "");
+    const [email, setEmail] = useState(currentUser?.email || "");
+    const [password, setPassword] = useState(currentUser?.password || "");
+    const [error, setError] = useState("");
+    const [isLoading, setIsLoading] = useState(true);
+    const navigate = useNavigate();
 
-  useEffect(() => {
-    if (currentUser) {
-      setIsLoading(false);
-    }
-  }, [currentUser]);
+    useEffect(() => {
+      if (currentUser) {
+        setIsLoading(false);
+      }
+    }, [currentUser]);
 
-  const handleUpdate = async () => {
-    setError("");
-
-    if (!name || !email) return setError("Name and email are required.");
-    if (name === currentUser.name && email === currentUser.email && !password) {
-      return setError("No changes detected. Please update your credentials.");
-    }
-    const updatedUserData = { name, email, ...(password && { password }) };
-    try {
-      const csrfToken = getCookie("csrf_access_token");
-      if (!csrfToken) return setError("CSRF token is missing");
-
-      const response = await fetch(`/api/v1/current-user/update`, {
-        method: "PATCH",
-        headers: {
-          "CONTENT-TYPE": "application/json",
-          "X-CSRF-TOKEN": csrfToken,
-        },
-        body: JSON.stringify(updatedUserData),
-      });
-      const data = await response.json();
-      if (!response.ok) 
-        throw new Error(data.error || "Failed to update profile.");
-      updateUser(data);
-      setName(data.name);
-      setEmail(data.email);
-      setPassword("");
-      localStorage.setItem("currentUser", JSON.stringify(data)); 
-      toast.success("Profile updated successfully!");
-    } catch (err) {
-      setError(err.message || "An error occurred while updating your profile.");
-    }
-  };
-
-  const handleDelete = async () => {
-    const confirmDelete = window.confirm("Are you sure you want to delete your profile?");
-    if (confirmDelete) {
+    const handleUpdate = async () => {
+      setError("");
+      
+      if (!name || !email) return setError("Name and email are required.");
+      
+      // Check if name, email, and password (if provided) have changed
+      if (
+        name === currentUser.name &&
+        email === currentUser.email &&
+        password === ""  // No password change
+      ) {
+        return setError("No changes detected. Please update your credentials.");
+      }
+    
+      const updatedUserData = { name, email, ...(password && { password }) };
+    
       try {
         const csrfToken = getCookie("csrf_access_token");
-        if (!csrfToken) {
-          setError("Session expired. Redirecting to login...");
-          setTimeout(() => navigate("/login"), 3000);
-          return;
-        }
-
-        const response = await fetch(`/api/v1/delete-account`, {
-          method: "DELETE",
+        if (!csrfToken) return setError("CSRF token is missing");
+    
+        const response = await fetch(`/api/v1/current-user/update`, {
+          method: "PATCH",
           headers: {
+            "Content-Type": "application/json",
             "X-CSRF-TOKEN": csrfToken,
           },
+          body: JSON.stringify(updatedUserData),
         });
-
-        if (response.ok) {
-          updateUser(null);
-          localStorage.removeItem("currentUser");
-          toast.success("Profile deleted successfully!");
-          navigate("/about");
-        } else {
-          const data = await response.json();
-          setError(data.error || "Failed to delete profile.");
-        }
+    
+        const data = await response.json();
+    
+        if (!response.ok) throw new Error(data.error || "Failed to update profile.");
+    
+        // Update global and local state
+        updateUser(data); // Updates the shared context
+        setName(data.name);
+        setEmail(data.email);
+        setPassword(""); // Clear the password input
+    
+        toast.success("Profile updated successfully!");
       } catch (err) {
-        setError("An error occurred while deleting your profile.");
+        setError(err.message || "An error occurred while updating your profile.");
       }
+    };
+    
+
+    const handleDelete = async () => {
+      const confirmDelete = window.confirm("Are you sure you want to delete your profile?");
+      if (confirmDelete) {
+        try {
+          const csrfToken = getCookie("csrf_access_token");
+          if (!csrfToken) {
+            setError("Session expired. Redirecting to login...");
+            setTimeout(() => navigate("/login"), 3000);
+            return;
+          }
+
+          const response = await fetch(`/api/v1/delete-account`, {
+            method: "DELETE",
+            headers: {
+              "X-CSRF-TOKEN": csrfToken,
+            },
+          });
+
+          if (response.ok) {
+            updateUser(null);
+            localStorage.removeItem("currentUser");
+            toast.success("Profile deleted successfully!");
+            navigate("/about");
+          } else {
+            const data = await response.json();
+            setError(data.error || "Failed to delete profile.");
+          }
+        } catch (err) {
+          setError("An error occurred while deleting your profile.");
+        }
+      }
+    };
+
+    if (isLoading) {
+      return <div>Loading user information...</div>;
     }
+
+    return (
+      <ProfileContainer>
+        <Title>Profile</Title>
+        {error && <ErrorMessage>{error}</ErrorMessage>}
+        <Form
+          onSubmit={(e) => {
+            e.preventDefault();
+            handleUpdate();
+          }}
+        >
+          <FormGroup>
+            <Label>Name:</Label>
+            <Input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+          </FormGroup>
+          <FormGroup>
+            <Label>Email:</Label>
+            <Input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </FormGroup>
+          <FormGroup>
+            <Label>Password:</Label>
+            <Input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </FormGroup>
+          <Button type="submit">Update Profile</Button>
+        </Form>
+        <DeleteButton onClick={handleDelete}>Delete Profile</DeleteButton>
+      </ProfileContainer>
+    );
   };
 
-  if (isLoading) {
-    return <div>Loading user information...</div>;
-  }
-
-  return (
-    <ProfileContainer>
-      <Title>Profile</Title>
-      {error && <ErrorMessage>{error}</ErrorMessage>}
-      <Form
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleUpdate();
-        }}
-      >
-        <FormGroup>
-          <Label>Name:</Label>
-          <Input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
-        </FormGroup>
-        <FormGroup>
-          <Label>Email:</Label>
-          <Input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </FormGroup>
-        <FormGroup>
-          <Label>Password:</Label>
-          <Input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </FormGroup>
-        <Button type="submit">Update Profile</Button>
-      </Form>
-      <DeleteButton onClick={handleDelete}>Delete Profile</DeleteButton>
-    </ProfileContainer>
-  );
-};
-
-export default Profile;
+  export default Profile;
 
 
 // Styled Components

@@ -1,23 +1,23 @@
 from routes.__init__ import make_response, Resource
 from routes.__init__ import jwt_required, request, db
 from models.expense import Expense
+from models.budget import Budget
 from flask_jwt_extended import current_user
 
 class ExpensesDelete(Resource):
     @jwt_required()
-    def delete(self):
+    def delete(self, expense_id):
         try:
-            data = request.get_json()
+            # Query the expense by expense_id and ensure the logged-in user owns the budget
+            expense = Expense.query.filter_by(id=expense_id).first()
 
-            if "expense_id" not in data:
-                return make_response({"error": "Expense ID is required."}, 400)
-
-            # Query the expense by ID and user_id (to ensure the logged-in user owns the expense)
-            expense = Expense.query.filter(id=data["expense_id"], user_id=current_user.id).first()
-
-            # Check if the expense exists
             if not expense:
-                return make_response({"error": "Expense not found or you are not authorized to delete this expense."}, 404)
+                return make_response({"error": "Expense not found."}, 404)
+
+            # Ensure the logged-in user is associated with the budget
+            budget = Budget.query.get(expense.budget_id)  # assuming Expense has a budget_id
+            if budget is None or budget.user_id != current_user.id:
+                return make_response({"error": "You are not authorized to delete this expense."}, 403)
 
             # Delete the expense
             db.session.delete(expense)

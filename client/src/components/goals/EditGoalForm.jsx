@@ -34,8 +34,6 @@ const EditGoal = () => {
         fetchGoal();
     }, [id, getGoalById]);
 
-    
-
     const handleSubmit = async (values, { setSubmitting }) => {
         const isCompleted = values.is_completed === "true";
         if (
@@ -62,18 +60,18 @@ const EditGoal = () => {
         }
     };
 
-    const handleDelete = async () => {
-        const confirmed = window.confirm("Are you sure you want to delete this goal?");
-        if (confirmed) {
-            try {
-                await deleteGoal(id);
-                navigate('/dashboard'); 
-            } catch (error) {
-                console.error('Error deleting goal:', error);
-                toast.error("Failed to delete goal. Please try again.");
-            }
-        }
-    };
+    // const handleDelete = async () => {
+    //     const confirmed = window.confirm("Are you sure you want to delete this goal?");
+    //     if (confirmed) {
+    //         try {
+    //             await deleteGoal(id);
+    //             navigate('/dashboard'); 
+    //         } catch (error) {
+    //             console.error('Error deleting goal:', error);
+    //             toast.error("Failed to delete goal. Please try again.");
+    //         }
+    //     }
+    // };
 
     if (!goal) return <p>Loading goal...</p>;
 
@@ -134,9 +132,9 @@ const EditGoal = () => {
                             <SubmitButton type="submit" disabled={isSubmitting}>
                                 Update Goal
                             </SubmitButton>
-                            <DeleteButton type="button" onClick={handleDelete}>
+                            {/* <DeleteButton type="button" onClick={handleDelete}>
                                 Delete Goal
-                            </DeleteButton>
+                            </DeleteButton> */}
                         </ButtonContainer>
                     </Form>
                 )}

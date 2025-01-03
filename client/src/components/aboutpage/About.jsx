@@ -37,7 +37,7 @@ export default About;
 const AboutContainer = styled.div`
   height: 100vh;
   width: 100%;
-  background: linear-gradient(to right, #6a11cb, #2575fc);
+  background: linear-gradient(to right,rgba(0, 49, 88, 0.97), #2575fc);
   display: flex;
   align-items: center;
   justify-content: center;
